@@ -5,6 +5,7 @@ import { AuthProvider } from "@/lib/AuthContext";
 export const metadata: Metadata = {
   title: "Aharrie Strategy — Drug Verification",
   description: "Verify any medication in seconds. Protect yourself from counterfeit drugs.",
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
