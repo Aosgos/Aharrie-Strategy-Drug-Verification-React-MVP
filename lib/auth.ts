@@ -79,3 +79,15 @@ export async function getAuthUser(req: NextRequest): Promise<JWTPayload | null> 
   try { return await verifyToken(token); }
   catch { return null; }
 }
+
+// ── Cookie helper (used by login/register API routes) ─────────────────────────
+// Setting the cookie via the Set-Cookie response header — rather than client-side
+// document.cookie — guarantees it exists in the browser before any redirect can
+// happen, so middleware never misses it on the very next navigation.
+export const AUTH_COOKIE_OPTIONS = {
+  path: "/",
+  maxAge: 60 * 60 * 24 * 7, // 7 days
+  sameSite: "lax" as const,
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+};

@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ShieldCheck, Eye, EyeOff, Fingerprint, KeyRound } from "lucide-react";
+import { ShieldCheck, Eye, EyeOff } from "lucide-react";
 import PageShell from "@/components/ui/PageShell";
 import TopNav from "@/components/ui/TopNav";
 import Card from "@/components/ui/Card";
@@ -14,8 +14,8 @@ import { User } from "@/types";
 export default function PatientLoginPage() {
   const router = useRouter();
   const { login } = useAuth();
-  const [email, setEmail]       = useState("patient@example.com");
-  const [password, setPassword] = useState("password123");
+  const [email, setEmail]       = useState("");
+  const [password, setPassword] = useState("");
   const [showPw, setShowPw]     = useState(false);
   const [loading, setLoading]   = useState(false);
   const [error, setError]       = useState("");
@@ -51,23 +51,11 @@ export default function PatientLoginPage() {
             <FieldInput label="Password" type={showPw ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} placeholder="Enter your password"
               rightIcon={<button type="button" onClick={() => setShowPw(!showPw)}>{showPw ? <EyeOff size={18} /> : <Eye size={18} />}</button>} required />
             {error && <p className="text-[12px] text-[#D4607A] mb-3">{error}</p>}
-            <Button type="submit" disabled={loading} className="mb-4">
+            <Button type="submit" disabled={loading}>
               {loading ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full spinner" /> : "Sign In"}
             </Button>
           </form>
-          <div className="flex items-center gap-2.5 my-1 text-[#8AA398] text-[12px]">
-            <div className="flex-1 h-px bg-[#D4E8DC]" />OR CONTINUE WITH<div className="flex-1 h-px bg-[#D4E8DC]" />
-          </div>
-          <div className="grid grid-cols-2 gap-2.5 mt-3">
-            <Button variant="outline" type="button" onClick={() => { login({ id:"demo", email:"", name:"Patient User", role:"patient", createdAt: new Date().toISOString() }, "demo-token"); router.push("/home"); }}>
-              <Fingerprint size={16} />Biometric
-            </Button>
-            <Button variant="outline" type="button" onClick={() => { login({ id:"demo", email:"", name:"Patient User", role:"patient", createdAt: new Date().toISOString() }, "demo-token"); router.push("/home"); }}>
-              <KeyRound size={16} />Passkey
-            </Button>
-          </div>
-          <p className="text-[12px] text-[#5A7067] text-center mt-4">Demo: patient@example.com / password123</p>
-          <p className="text-[13px] text-[#5A7067] text-center mt-2">
+          <p className="text-[13px] text-[#5A7067] text-center mt-4">
             Don&apos;t have an account?{" "}
             <button onClick={() => router.push("/register")} className="text-[#4A7C5E] font-medium">Sign up</button>
           </p>

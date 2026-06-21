@@ -14,9 +14,9 @@ import { User } from "@/types";
 export default function PharmacistLoginPage() {
   const router = useRouter();
   const { login } = useAuth();
-  const [email,   setEmail]   = useState("pharmacy@example.com");
-  const [pcn,     setPcn]     = useState("PCN/2024/00123");
-  const [password,setPassword]= useState("pharmacy123");
+  const [email,   setEmail]   = useState("");
+  const [pcn,     setPcn]     = useState("");
+  const [password,setPassword]= useState("");
   const [showPw,  setShowPw]  = useState(false);
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState("");
@@ -27,15 +27,10 @@ export default function PharmacistLoginPage() {
     try {
       const { user, token } = await api.auth.login(email, password) as { user: User; token: string };
       login(user, token);
-      router.push("/subscription");
+      router.push(user.subscriptionPlan ? "/dashboard" : "/subscription");
     } catch (err: unknown) {
       setError((err as Error).message);
     } finally { setLoading(false); }
-  }
-
-  function demoLogin() {
-    login({ id:"demo-pharma", email:"pharmacy@example.com", name:"Obi's Pharmacy", role:"pharmacist", pharmacyName:"Obi's Pharmacy", subscriptionPlan:"professional", createdAt: new Date().toISOString() }, "demo-pharma-token");
-    router.push("/dashboard");
   }
 
   return (
@@ -66,8 +61,8 @@ export default function PharmacistLoginPage() {
             </Button>
           </form>
           <p className="text-[13px] text-[#5A7067] text-center mt-3">
-            Already subscribed?{" "}
-            <button onClick={demoLogin} className="text-[#4A7C5E] font-medium">Go to dashboard</button>
+            Don&apos;t have an account?{" "}
+            <button onClick={() => router.push("/register")} className="text-[#4A7C5E] font-medium">Sign up</button>
           </p>
         </Card>
       </div>
