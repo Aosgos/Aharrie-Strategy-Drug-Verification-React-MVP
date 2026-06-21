@@ -68,7 +68,8 @@ export default function PatientLoginPage() {
           </div>
           <p className="text-[12px] text-[#5A7067] text-center mt-4">Demo: patient@example.com / password123</p>
           <p className="text-[13px] text-[#5A7067] text-center mt-2">
-            Don&apos;t have an account? <button className="text-[#4A7C5E] font-medium">Sign up</button>
+            Don&apos;t have an account?{" "}
+            <button onClick={() => router.push("/register")} className="text-[#4A7C5E] font-medium">Sign up</button>
           </p>
         </Card>
       </div>

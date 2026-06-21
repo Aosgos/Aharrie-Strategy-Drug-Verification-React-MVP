@@ -33,12 +33,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(u); setToken(t);
     localStorage.setItem("aharrie_token", t);
     localStorage.setItem("aharrie_user",  JSON.stringify(u));
+    // Middleware runs on the server and can only see cookies, not localStorage.
+    // Without this, every protected route (/home, /scan, /dashboard, etc.)
+    // would redirect back to /role even immediately after a successful login.
+    document.cookie = `aharrie_token=${t}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
   }
 
   function logout() {
     setUser(null); setToken(null);
     localStorage.removeItem("aharrie_token");
     localStorage.removeItem("aharrie_user");
+    document.cookie = "aharrie_token=; path=/; max-age=0";
   }
 
   function updatePlan(plan: SubscriptionPlan) {
