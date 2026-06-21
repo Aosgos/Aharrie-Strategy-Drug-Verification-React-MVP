@@ -36,7 +36,7 @@ export async function registerUser(data: {
 
   if (error) throw new Error(error.message);
   const user  = toUser(row);
-  const token = signToken({ userId: user.id, email: user.email, role: user.role });
+  const token = await signToken({ userId: user.id, email: user.email, role: user.role });
   return { user, token };
 }
 
@@ -50,7 +50,7 @@ export async function loginUser(email: string, password: string): Promise<{ user
   if (!valid)  throw new Error("Invalid email or password");
 
   const user  = toUser(row);
-  const token = signToken({ userId: user.id, email: user.email, role: user.role });
+  const token = await signToken({ userId: user.id, email: user.email, role: user.role });
   return { user, token };
 }
 
@@ -73,9 +73,9 @@ export async function updateSubscription(userId: string, plan: SubscriptionPlan)
 }
 
 // ── Auth guard helper (used in API routes) ────────────────────────────────────
-export function getAuthUser(req: NextRequest): JWTPayload | null {
+export async function getAuthUser(req: NextRequest): Promise<JWTPayload | null> {
   const token = getTokenFromHeader(req.headers.get("authorization") ?? undefined);
   if (!token) return null;
-  try { return verifyToken(token); }
+  try { return await verifyToken(token); }
   catch { return null; }
 }

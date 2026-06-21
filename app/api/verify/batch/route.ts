@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
     }).parse(await req.json());
     const code   = `${nafdacNumber.trim().toUpperCase()}-${batchNumber.trim().toUpperCase()}`;
     const result = await verifyDrug(code);
-    const user   = getAuthUser(req);
+    const user   = await getAuthUser(req);
     if (user) await saveScanHistory(user.userId, result, code).catch(() => {});
     return NextResponse.json({ success:true, data:result });
   } catch (e: unknown) {

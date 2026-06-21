@@ -3,7 +3,7 @@ import { z } from "zod";
 import { getAuthUser, updateSubscription } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
-  const jwt = getAuthUser(req);
+  const jwt = await getAuthUser(req);
   if (!jwt) return NextResponse.json({ success:false, error:"Unauthorized" }, { status:401 });
   if (jwt.role !== "pharmacist")
     return NextResponse.json({ success:false, error:"Only pharmacists can subscribe" }, { status:403 });

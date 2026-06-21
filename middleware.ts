@@ -8,7 +8,7 @@ const PHARMACIST_ONLY = ["/dashboard", "/analytics", "/dispensing"];
 // Routes only for patients
 const PATIENT_ONLY = ["/home", "/history", "/pharmacies"];
 
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   const isProtected = PROTECTED.some(p => pathname.startsWith(p));
@@ -22,7 +22,7 @@ export function middleware(req: NextRequest) {
   }
 
   try {
-    const payload = verifyToken(token);
+    const payload = await verifyToken(token);
 
     // Role guards
     if (PHARMACIST_ONLY.some(p => pathname.startsWith(p)) && payload.role !== "pharmacist") {

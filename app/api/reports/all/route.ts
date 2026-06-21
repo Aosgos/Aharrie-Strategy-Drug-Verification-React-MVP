@@ -3,7 +3,7 @@ import { getAllReports } from "@/lib/reports";
 import { getAuthUser } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
-  const user = getAuthUser(req);
+  const user = await getAuthUser(req);
   if (!user || user.role !== "pharmacist")
     return NextResponse.json({ success:false, error:"Pharmacist access required" }, { status:403 });
   const page   = Number(req.nextUrl.searchParams.get("page"))   || 1;
