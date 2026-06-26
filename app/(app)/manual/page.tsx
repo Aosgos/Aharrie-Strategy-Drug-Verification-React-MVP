@@ -10,6 +10,7 @@ import FieldInput from "@/components/ui/FieldInput";
 import { useAuth } from "@/lib/AuthContext";
 import { api } from "@/lib/api";
 import { DrugResult } from "@/types";
+import { useStreak } from "@/context/StreakContext";
 
 const demos = [
   { label:"Coartem — Authentic",       nafdac:"04-3275", batch:"CTBN-240601" },
@@ -20,6 +21,7 @@ const demos = [
 export default function ManualLookupPage() {
   const router = useRouter();
   const { token } = useAuth();
+  const { increment } = useStreak();
   const [nafdac,  setNafdac]  = useState("");
   const [batch,   setBatch]   = useState("");
   const [loading, setLoading] = useState(false);
@@ -31,6 +33,7 @@ export default function ManualLookupPage() {
     try {
       const result = await api.verify.byBatch(nafdac, batch, token) as DrugResult;
       sessionStorage.setItem("aharrie_result", JSON.stringify(result));
+      increment(true);
       router.push("/result");
     } catch { router.push("/result"); }
     finally { setLoading(false); }

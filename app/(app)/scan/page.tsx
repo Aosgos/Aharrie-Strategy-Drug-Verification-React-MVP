@@ -1,13 +1,28 @@
 "use client";
-import { useState, useMemo } from "react";
+
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Flashlight, FlashlightOff, Keyboard, ChevronDown, ChevronUp, Search } from "lucide-react";
+import { Flashlight, FlashlightOff, Keyboard, ChevronDown, ChevronUp, Search, CheckCircle, AlertCircle, XCircle } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import { api } from "@/lib/api";
 import { DrugResult } from "@/types";
+import { useStreak } from "@/context/StreakContext";
+import dynamic from "next/dynamic";
+
+const SceneWrapper = dynamic(
+  () => import("@/components/three").then((m) => m.SceneWrapper),
+  { ssr: false, loading: () => null }
+);
+const ScannerOverlay = dynamic(
+  () => import("@/components/three").then((m) => m.ScannerOverlay),
+  { ssr: false, loading: () => null }
+);
+const SuccessBurst = dynamic(
+  () => import("@/components/three").then((m) => m.SuccessBurst),
+  { ssr: false, loading: () => null }
+);
 
 const DEMO_DRUGS = [
-  // Authentic
   { id:"04-3275-CTBN-240601", label:"Coartem 20mg/120mg",          detail:"04-3275 · CTBN-240601",  status:"authentic"   },
   { id:"04-8969-LNRT-240815", label:"Lonart 80mg/480mg",           detail:"04-8969 · LNRT-240815",  status:"authentic"   },
   { id:"04-2508-AMXL-241105", label:"Amoxil 500mg",                detail:"04-2508 · AMXL-241105",  status:"authentic"   },
@@ -20,13 +35,10 @@ const DEMO_DRUGS = [
   { id:"04-1233-FLGY-240720", label:"Flagyl 400mg",                detail:"04-1233 · FLGY-240720",  status:"authentic"   },
   { id:"04-3009-VNTL-241201", label:"Ventolin 100mcg",             detail:"04-3009 · VNTL-241201",  status:"authentic"   },
   { id:"A4-9301-TLD-241005",  label:"TLD 300/300/50mg",            detail:"A4-9301 · TLD-241005",   status:"authentic"   },
-  // Suspicious
   { id:"04-3275-FAKE-240301", label:"Coartem (Unverified)",        detail:"04-3275 · FAKE-240301",  status:"suspicious"  },
   { id:"04-6233-SUSP-240501", label:"Metformin (Unverified)",      detail:"04-6233 · SUSP-240501",  status:"suspicious"  },
-  // Counterfeit
   { id:"NONE-LG-2024-881",   label:"Paracetamol (FAKE)",          detail:"NOT FOUND · LG-2024-881",status:"counterfeit" },
   { id:"NONE-FAKE-LON-2024", label:"Lonart (FAKE)",               detail:"NOT FOUND · FAKE-LON",   status:"counterfeit" },
-  // Expired
   { id:"04-3275-CTBN-211001", label:"Coartem (Expired)",           detail:"04-3275 · CTBN-211001",  status:"expired"     },
 ];
 
@@ -40,10 +52,15 @@ const groups = [
 export default function ScanPage() {
   const router = useRouter();
   const { token } = useAuth();
+  const { increment } = useStreak();
   const [loading,   setLoading]   = useState(false);
   const [torch,     setTorch]     = useState(false);
   const [openGroup, setOpenGroup] = useState<string | null>("Authentic");
   const [query,     setQuery]     = useState("");
+  const [scanning,  setScanning]  = useState(false);
+  const [scanTrigger, setScanTrigger] = useState(0);
+  const [burstTrigger, setBurstTrigger] = useState(0);
+  const [scanResult, setScanResult] = useState<{ status: string; label: string } | null>(null);
 
   const filtered = useMemo(() => {
     const q = query.toLowerCase().trim();
@@ -56,14 +73,54 @@ export default function ScanPage() {
 
   async function scan(id: string) {
     if (loading) return;
+    const drug = DEMO_DRUGS.find(d => d.id === id);
+    if (!drug) return;
+
+    setScanning(true);
     setLoading(true);
-    try {
-      const result = await api.verify.byCode(id, token) as DrugResult;
-      sessionStorage.setItem("aharrie_result", JSON.stringify(result));
+    setScanResult(null);
+
+    setTimeout(() => {
+      setScanTrigger(t => t + 1);
+      setBurstTrigger(t => t + 1);
+      setScanResult({ status: drug.status, label: drug.label });
+    }, 800);
+
+    setTimeout(() => {
+      setScanning(false);
+      setLoading(false);
+      increment(true);
+      sessionStorage.setItem("aharrie_result", JSON.stringify({
+        id: drug.id,
+        brandName: drug.label,
+        status: drug.status,
+        verifiedAt: new Date().toISOString(),
+      }));
       router.push("/result");
-    } catch { router.push("/result"); }
-    finally { setLoading(false); }
+    }, 2000);
   }
+
+  useEffect(() => {
+    if (scanning && !loading) {
+      if ('vibrate' in navigator) {
+        navigator.vibrate([50, 100, 50]);
+      }
+    }
+  }, [scanning, loading]);
+
+  const statusColors: Record<string, string> = {
+    authentic: "#4A7C5E",
+    suspicious: "#C07A1A",
+    counterfeit: "#D4607A",
+    expired: "#7A7875",
+  };
+
+  const statusIcons: Record<string, React.ReactNode> = {
+    authentic: <CheckCircle size={28} color="#4A7C5E" />,
+    suspicious: <AlertCircle size={28} color="#C07A1A" />,
+    counterfeit: <XCircle size={28} color="#D4607A" />,
+    expired: <AlertCircle size={28} color="#7A7875" />,
+  };
 
   return (
     <div className="flex flex-col min-h-screen max-w-md mx-auto" style={{ background:"#0D0D0D" }}>
@@ -77,14 +134,29 @@ export default function ScanPage() {
         </button>
       </div>
 
-      <div className="flex justify-center py-5">
-        <div className="relative w-52 h-52">
-          {[{ t:0,l:0,bt:"3px 0 0 3px" },{ t:0,r:0,bt:"3px 3px 0 0" },{ b:0,l:0,bt:"0 0 3px 3px" },{ b:0,r:0,bt:"0 3px 3px 0" }].map((c,i) => (
-            <div key={i} style={{ position:"absolute", width:28, height:28, ...c, border:"3px solid #1DCA8E", borderWidth: i===0?"3px 0 0 3px":i===1?"3px 3px 0 0":i===2?"0 0 3px 3px":"0 3px 3px 0" }} />
-          ))}
-          <div className="scan-line absolute left-2 right-2 h-0.5 bg-[#1DCA8E] opacity-80" />
-          {loading && <div className="absolute inset-0 flex items-center justify-center bg-black/70"><div className="w-8 h-8 border-2 border-[#1DCA8E] border-t-transparent rounded-full spinner" /></div>}
+      <div className="flex justify-center py-5 relative">
+        <SceneWrapper style={{ width: 220, height: 220 }}>
+          <ScannerOverlay isScanning={scanning} />
+          <SuccessBurst trigger={burstTrigger} />
+        </SceneWrapper>
+
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="relative w-52 h-52">
+            {[{ x: -1.1, y: -1.1, bt: "3px 0 0 3px" }, { x: 1.1, y: -1.1, bt: "3px 3px 0 0" }, { x: -1.1, y: 1.1, bt: "0 0 3px 3px" }, { x: 1.1, y: 1.1, bt: "0 3px 3px 0" }].map((c, i) => (
+              <div key={i} style={{ position: "absolute", width: 28, height: 28, left: `calc(50% + ${c.x * 80}px)`, top: `calc(50% + ${c.y * 80}px)`, border: "3px solid #1DCA8E", borderWidth: c.bt, transform: "translate(-50%, -50%)" }} />
+            ))}
+          </div>
         </div>
+
+        {scanResult && (
+          <div className="absolute bottom-[-60px] left-1/2 -translate-x-1/2 text-center animate-in fade-in">
+            <div className="w-14 h-14 rounded-full mx-auto mb-2 flex items-center justify-center" style={{ background: `${statusColors[scanResult.status]}20` }}>
+              {statusIcons[scanResult.status]}
+            </div>
+            <p className="text-white font-medium text-[14px]">{scanResult.label}</p>
+            <p className="text-[12px]" style={{ color: statusColors[scanResult.status] }}>{scanResult.status}</p>
+          </div>
+        )}
       </div>
 
       <div className="flex justify-around px-4 pb-3">

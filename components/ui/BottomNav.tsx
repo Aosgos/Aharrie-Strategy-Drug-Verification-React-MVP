@@ -1,12 +1,13 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, History, Building2, User, LayoutDashboard, Scan, BarChart3, Settings } from "lucide-react";
+import { Home, History, Building2, User, LayoutDashboard, Scan, BarChart3, Settings, Award } from "lucide-react";
 import { UserRole } from "@/types";
 
 const patientItems = [
   { label:"Home",       icon:Home,          href:"/home" },
   { label:"History",    icon:History,        href:"/history" },
+  { label:"Rewards",    icon:Award,         href:"/rewards" },
   { label:"Pharmacies", icon:Building2,      href:"/pharmacies" },
   { label:"Account",    icon:User,           href:"/account" },
 ];
@@ -14,6 +15,7 @@ const patientItems = [
 const pharmacistItems = [
   { label:"Dashboard",  icon:LayoutDashboard, href:"/dashboard" },
   { label:"Scan",       icon:Scan,            href:"/scan" },
+  { label:"Rewards",    icon:Award,         href:"/rewards" },
   { label:"Analytics",  icon:BarChart3,       href:"/analytics" },
   { label:"Settings",   icon:Settings,        href:"/account" },
 ];

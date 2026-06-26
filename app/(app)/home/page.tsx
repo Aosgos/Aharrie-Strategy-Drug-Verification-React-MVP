@@ -5,6 +5,7 @@ import PageShell from "@/components/ui/PageShell";
 import Card from "@/components/ui/Card";
 import BottomNav from "@/components/ui/BottomNav";
 import { useAuth } from "@/lib/AuthContext";
+import { StreakDisplay } from "@/components/ui/StreakDisplay";
 
 const quickActions = [
   { icon: AlertTriangle, label:"Report fake",  sub:"Flag suspicious drug",  href:"/report",    pink:true  },
@@ -24,6 +25,7 @@ export default function PatientHomePage() {
         <div className="w-8 h-8 rounded-full bg-[#D4EDE0] flex items-center justify-center text-[13px] font-semibold text-[#4A7C5E]">{initials}</div>
       </div>
       <div className="flex-1 overflow-y-auto no-scrollbar px-4 pb-4 flex flex-col gap-3">
+        <StreakDisplay />
         <Card className="text-center">
           <div className="w-12 h-12 rounded-full bg-[#D4EDE0] flex items-center justify-center mx-auto mb-3"><Scan size={22} color="#4A7C5E" /></div>
           <h2 className="text-[16px] font-semibold text-[#1A2E25] mb-1">Verify a medication</h2>
