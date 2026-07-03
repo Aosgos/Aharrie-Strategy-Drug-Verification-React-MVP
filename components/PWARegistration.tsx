@@ -5,7 +5,6 @@ import { useEffect, useState } from "react";
 export function PWARegistration() {
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [isOnline, setIsOnline] = useState(true);
 
   useEffect(() => {
     if ('serviceWorker' in navigator) {
@@ -23,21 +22,12 @@ export function PWARegistration() {
       setDeferredPrompt(null);
     };
 
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
-
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    setIsOnline(navigator.onLine);
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
     };
   }, []);
 
@@ -51,14 +41,12 @@ export function PWARegistration() {
     }
   };
 
-  const handleDismiss = () => {
-    setShowInstallPrompt(false);
-  };
+  const handleDismiss = () => setShowInstallPrompt(false);
 
   if (!showInstallPrompt) return null;
 
   return (
-    <div className="fixed bottom-24 left-4 right-4 md:left-auto md:right-4 md:bottom-24 md:w-80 z-50 animate-in slide-in-from-bottom-2">
+    <div className="fixed bottom-24 left-4 right-4 md:left-auto md:right-4 md:bottom-24 md:w-80 z-50">
       <div className="bg-white rounded-2xl p-4 shadow-xl border border-[#C8DDD2]" style={{ boxShadow: "0 10px 40px rgba(74,124,94,0.15)" }}>
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-xl bg-[#D4EDE0] flex items-center justify-center">

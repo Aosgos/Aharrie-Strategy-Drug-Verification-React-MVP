@@ -4,7 +4,6 @@ import { ShieldCheck, QrCode, FileText, BarChart3, AlertTriangle, CircleCheck, X
 import PageShell from "@/components/ui/PageShell";
 import BottomNav from "@/components/ui/BottomNav";
 import { useAuth } from "@/lib/AuthContext";
-import { StreakDisplay } from "@/components/ui/StreakDisplay";
 
 const actions = [
   { icon: QrCode,        label:"Bulk verify",    sub:"Scan a batch",    href:"/scan",       pink:false },
@@ -40,9 +39,6 @@ export default function PharmacistDashboardPage() {
       </div>
 
       <div className="flex-1 overflow-y-auto no-scrollbar px-4 pb-4 flex flex-col gap-3 bg-[#F2F8F4]">
-        <div className="px-4 pt-2">
-          <StreakDisplay />
-        </div>
         <div className="grid grid-cols-2 gap-2.5 -mt-4">
           {[{ label:"Scans today", value:"47", sub:"↑ 12% vs yesterday", vc:"#4A7C5E" }, { label:"Flagged drugs", value:"3", sub:"Needs review", vc:"#D4607A" }].map(({ label, value, sub, vc }) => (
             <div key={label} className="bg-white rounded-xl p-3.5" style={{ boxShadow:"0 2px 14px rgba(74,124,94,0.09)" }}>

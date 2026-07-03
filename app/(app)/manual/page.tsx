@@ -33,10 +33,12 @@ export default function ManualLookupPage() {
     try {
       const result = await api.verify.byBatch(nafdac, batch, token) as DrugResult;
       sessionStorage.setItem("aharrie_result", JSON.stringify(result));
+    } catch { /* fall through — result page handles missing data gracefully */ }
+    finally {
+      setLoading(false);
       increment(true);
       router.push("/result");
-    } catch { router.push("/result"); }
-    finally { setLoading(false); }
+    }
   }
 
   return (

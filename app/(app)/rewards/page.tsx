@@ -1,17 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { ArrowLeft, Palette, Award, Check, Lock, Sparkles } from "lucide-react";
+import { Palette, Award, Check, Lock, Sparkles } from "lucide-react";
 import PageShell from "@/components/ui/PageShell";
 import TopNav from "@/components/ui/TopNav";
-import Card from "@/components/ui/Card";
 import { useStreak } from "@/context/StreakContext";
-import { useAuth } from "@/lib/AuthContext";
 
 export default function RewardsPage() {
-  const { streak, activeTheme, unlockedThemes, lockedThemes, unlockedBadges, allBadges, setTheme, setBadge } = useStreak();
-  const { user } = useAuth();
+  const { streak, activeTheme, unlockedThemes, lockedThemes, allBadges, setTheme, setBadge } = useStreak();
   const [tab, setTab] = useState<"themes" | "badges">("themes");
 
   return (

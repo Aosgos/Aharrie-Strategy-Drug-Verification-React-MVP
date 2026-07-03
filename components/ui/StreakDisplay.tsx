@@ -5,7 +5,7 @@ import { useStreak } from "@/context/StreakContext";
 import { useState } from "react";
 
 export function StreakDisplay({ compact = false }: { compact?: boolean }) {
-  const { streak, nextMilestone, progress, increment, freezeCost, purchaseFreeze } = useStreak();
+  const { streak, nextMilestone, progress, freezeCost, purchaseFreeze } = useStreak();
   const [showFreezeModal, setShowFreezeModal] = useState(false);
   const [freezeSuccess, setFreezeSuccess] = useState(false);
 

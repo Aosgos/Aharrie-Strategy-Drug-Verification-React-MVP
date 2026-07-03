@@ -1,3 +1,3 @@
 export { SceneProvider, SceneWrapper } from "./SceneProvider";
 export { FloatingParticles } from "./FloatingParticles";
-export { ScannerOverlay, SuccessBurst } from "./ScannerOverlay";
+export { ScannerOverlay } from "./ScannerOverlay";
