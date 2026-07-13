@@ -1,6 +1,6 @@
 {
   "name": "aharrie-strategy",
-  "version": "1.0.0",
+  "version": "3.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@react-three/drei": "^9.114.0",
     "@react-three/fiber": "^8.17.10",
     "@supabase/supabase-js": "^2.39.0",
     "@yudiel/react-qr-scanner": "^2.6.0",

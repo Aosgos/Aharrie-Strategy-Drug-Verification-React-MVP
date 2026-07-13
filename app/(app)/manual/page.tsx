@@ -2,39 +2,46 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search, ShieldCheck } from "lucide-react";
-import PageShell from "@/components/ui/PageShell";
-import TopNav from "@/components/ui/TopNav";
-import Card from "@/components/ui/Card";
-import Button from "@/components/ui/Button";
-import FieldInput from "@/components/ui/FieldInput";
 import { useAuth } from "@/lib/AuthContext";
+import { useI18n } from "@/context/I18nContext";
+import { useStreak } from "@/context/StreakContext";
 import { api } from "@/lib/api";
 import { DrugResult } from "@/types";
-import { useStreak } from "@/context/StreakContext";
 
-const demos = [
+const DEMOS = [
   { label:"Coartem — Authentic",       nafdac:"04-3275", batch:"CTBN-240601" },
-  { label:"Paracetamol — Counterfeit", nafdac:"NONE",    batch:"LG-2024-881" },
   { label:"Glucophage — Authentic",    nafdac:"04-6233", batch:"GCPG-240901" },
+  { label:"Paracetamol — Counterfeit", nafdac:"NONE",    batch:"LG-2024-881" },
 ];
 
 export default function ManualLookupPage() {
   const router = useRouter();
-  const { token } = useAuth();
+  const { token }    = useAuth();
+  const { t }        = useI18n();
   const { increment } = useStreak();
+
   const [nafdac,  setNafdac]  = useState("");
   const [batch,   setBatch]   = useState("");
   const [loading, setLoading] = useState(false);
+  const [error,   setError]   = useState("");
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!nafdac || !batch) return;
-    setLoading(true);
+    setLoading(true); setError("");
     try {
       const result = await api.verify.byBatch(nafdac, batch, token) as DrugResult;
       sessionStorage.setItem("aharrie_result", JSON.stringify(result));
-    } catch { /* fall through — result page handles missing data gracefully */ }
-    finally {
+    } catch {
+      const fallback: Partial<DrugResult> = {
+        brandName:"Unknown drug", genericName:"Unknown", nafdacNumber: nafdac,
+        batchNumber: batch, status:"unregistered", nafdacRegistered:false,
+        qrIntegrity:0, databaseMatch:"No record found", recallStatus:"Unknown",
+        verifiedAt: new Date().toISOString(), category:"", strength:"", form:"",
+        manufacturer:"", countryOfOrigin:"", expiryDate:"Unknown", priceRangeNGN:"",
+      };
+      sessionStorage.setItem("aharrie_result", JSON.stringify(fallback));
+    } finally {
       setLoading(false);
       increment(true);
       router.push("/result");
@@ -42,33 +49,67 @@ export default function ManualLookupPage() {
   }
 
   return (
-    <PageShell>
-      <TopNav title="Manual Lookup" backHref="/scan" />
-      <div className="flex flex-col items-center px-4 py-4 gap-2">
-        <div className="w-12 h-12 rounded-full bg-[#D4EDE0] flex items-center justify-center"><Search size={20} color="#4A7C5E" /></div>
-        <p className="text-[13px] text-[#5A7067] text-center">Enter the NAFDAC number and batch number from the drug packaging</p>
-      </div>
-      <div className="flex-1 overflow-y-auto no-scrollbar px-4 pb-6">
-        <Card>
-          <form onSubmit={submit} noValidate>
-            <FieldInput label="NAFDAC registration number *" placeholder="e.g. 04-3275" value={nafdac} onChange={e => setNafdac(e.target.value)} required />
-            <FieldInput label="Batch number *" placeholder="e.g. CTBN-240601" value={batch} onChange={e => setBatch(e.target.value)} required />
-            <FieldInput label="Drug name (optional)" placeholder="e.g. Coartem 20mg/120mg" />
-            <Button type="submit" disabled={loading} className="mt-1">
-              {loading ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full spinner" /> : <><Search size={16} color="white" />Verify drug</>}
-            </Button>
-          </form>
-          <div className="border-t border-[#F0F5F2] mt-4 pt-4">
-            <p className="text-[12px] text-[#8AA398] text-center mb-3">Try a demo lookup</p>
-            {demos.map(d => (
-              <button key={d.label} onClick={() => { setNafdac(d.nafdac); setBatch(d.batch); }}
-                className="flex items-center gap-2 text-[12px] text-[#4A7C5E] bg-transparent border-none cursor-pointer mb-2">
-                <ShieldCheck size={13} color="#4A7C5E" />{d.label}
-              </button>
-            ))}
+    <div className="relative min-h-screen flex flex-col" style={{ background: "var(--bg)" }}>
+      <div className="relative z-10 flex flex-col flex-1 max-w-md mx-auto w-full">
+        <div className="flex items-center gap-3 px-4 py-3 flex-shrink-0">
+          <button onClick={() => router.back()}
+            className="w-8 h-8 rounded-full flex items-center justify-center border-none cursor-pointer"
+            style={{ background: "var(--card-bg)", border: "1px solid var(--border)" }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--t1)" strokeWidth="2">
+              <path d="M19 12H5M12 5l-7 7 7 7" />
+            </svg>
+          </button>
+          <h1 className="text-[16px] font-semibold" style={{ color: "var(--t1)" }}>Manual Lookup</h1>
+        </div>
+
+        <div className="flex flex-col items-center px-4 py-4 gap-2">
+          <div className="w-12 h-12 rounded-full flex items-center justify-center"
+            style={{ background: "var(--green-lt)" }}>
+            <Search size={20} color="var(--green)" />
           </div>
-        </Card>
+          <p className="text-[13px] text-center" style={{ color: "var(--t2)" }}>
+            Enter the NAFDAC number and batch number from the drug packaging
+          </p>
+        </div>
+
+        <div className="flex-1 overflow-y-auto no-scrollbar px-4 pb-6">
+          <div className="rounded-2xl p-5" style={{ background: "var(--card-bg)", boxShadow: "var(--card-shadow)" }}>
+            <form onSubmit={submit} noValidate>
+              {[
+                { label:"NAFDAC registration number *", placeholder:"e.g. 04-3275", value:nafdac, setter:setNafdac },
+                { label:"Batch number *", placeholder:"e.g. CTBN-240601", value:batch, setter:setBatch },
+              ].map(({ label, placeholder, value, setter }) => (
+                <div key={label} className="mb-3.5">
+                  <label className="block text-[13px] font-medium mb-1.5" style={{ color: "var(--t1)" }}>{label}</label>
+                  <input value={value} onChange={e => setter(e.target.value.toUpperCase())}
+                    placeholder={placeholder} required
+                    className="w-full rounded-xl px-3.5 py-2.5 text-sm outline-none"
+                    style={{ background:"var(--bg-input)", border:"1px solid var(--border)", color:"var(--t1)", fontFamily:"monospace" }} />
+                </div>
+              ))}
+              {error && <p className="text-[12px] mb-3" style={{ color: "var(--pink)" }}>{error}</p>}
+              <button type="submit" disabled={loading}
+                className="w-full flex items-center justify-center gap-2 rounded-full py-3.5 text-[15px] font-medium text-white border-none cursor-pointer disabled:opacity-50"
+                style={{ background: "var(--green)" }}>
+                {loading
+                  ? <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full spinner" />
+                  : <><Search size={16} color="white" />Verify drug</>}
+              </button>
+            </form>
+
+            <div className="mt-4 pt-4" style={{ borderTop: "1px solid var(--border)" }}>
+              <p className="text-[12px] text-center mb-3" style={{ color: "var(--t3)" }}>Try a demo lookup</p>
+              {DEMOS.map(d => (
+                <button key={d.label} onClick={() => { setNafdac(d.nafdac); setBatch(d.batch); }}
+                  className="flex items-center gap-2 text-[12px] bg-transparent border-none cursor-pointer mb-2"
+                  style={{ color: "var(--green)" }}>
+                  <ShieldCheck size={13} color="var(--green)" />{d.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
-    </PageShell>
+    </div>
   );
 }

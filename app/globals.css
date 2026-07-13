@@ -2,18 +2,90 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Light mode tokens ─────────────────────────────────────────────────── */
 :root {
-  --green: #4A7C5E; --green-dk: #2E5C42; --green-lt: #D4EDE0; --green-xl: #EAF5EF;
-  --bg: #F2F8F4; --bg-input: #EAF4EE; --border: #C8DDD2;
-  --pink: #D4607A; --pink-bg: #FFE8EC;
-  --amber: #C07A1A; --amber-bg: #FFF4E0;
-  --t1: #1A2E25; --t2: #5A7067; --t3: #8AA398;
+  --green:    #4A7C5E; --green-dk: #2E5C42; --green-lt: #D4EDE0; --green-xl: #EAF5EF;
+  --bg:       #F2F8F4; --bg-input: #EAF4EE; --border:   #C8DDD2;
+  --pink:     #D4607A; --pink-bg:  #FFE8EC;
+  --amber:    #C07A1A; --amber-bg: #FFF4E0;
+  --t1:       #1A2E25; --t2:       #5A7067; --t3:       #8AA398;
+  --card-bg:  #ffffff; --card-shadow: 0 2px 14px rgba(74,124,94,0.09);
+  --surface:  #F2F8F4; --surface2: #EAF4EE;
 }
-* { box-sizing: border-box; }
-body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--t1); -webkit-font-smoothing: antialiased; }
+
+/* ── Dark mode tokens ──────────────────────────────────────────────────── */
+.dark {
+  --green:    #5EAA7A; --green-dk: #3D7A58; --green-lt: #1E3D2F; --green-xl: #162E23;
+  --bg:       #0F1A14; --bg-input: #1A2D22; --border:   #2A4335;
+  --pink:     #F07090; --pink-bg:  #3A1520;
+  --amber:    #D4922A; --amber-bg: #2E1E00;
+  --t1:       #E8F5EE; --t2:       #8AB09A; --t3:       #4A7060;
+  --card-bg:  #142010; --card-shadow: 0 2px 14px rgba(0,0,0,0.35);
+  --surface:  #0F1A14; --surface2: #1A2D22;
+}
+
+/* ── Base reset ────────────────────────────────────────────────────────── */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--t1);
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.25s ease, color 0.25s ease;
+}
+
+/* ── Utilities ─────────────────────────────────────────────────────────── */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── Animations ────────────────────────────────────────────────────────── */
 @keyframes scanMove { 0%,100% { top: 12%; } 50% { top: 80%; } }
 .scan-line { animation: scanMove 2s ease-in-out infinite; }
+
 @keyframes spin { to { transform: rotate(360deg); } }
 .spinner { animation: spin 0.7s linear infinite; }
+
+@keyframes float {
+  0%,100% { transform: translateY(0px) rotate(0deg); }
+  33%      { transform: translateY(-8px) rotate(1.5deg); }
+  66%      { transform: translateY(-4px) rotate(-1deg); }
+}
+.float { animation: float 6s ease-in-out infinite; }
+
+@keyframes pulse-glow {
+  0%,100% { box-shadow: 0 0 0 0 rgba(74,124,94,0); }
+  50%      { box-shadow: 0 0 24px 6px rgba(74,124,94,0.22); }
+}
+.pulse-glow { animation: pulse-glow 2.5s ease-in-out infinite; }
+
+@keyframes burst {
+  0%   { transform: scale(0); opacity: 1; }
+  80%  { transform: scale(1.5); opacity: 0.5; }
+  100% { transform: scale(2); opacity: 0; }
+}
+.burst { animation: burst 0.6s ease-out forwards; }
+
+@keyframes zoom-in {
+  from { transform: scale(0.85); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+.animate-in { animation: zoom-in 0.25s ease-out; }
+
+/* ── Card / Button dark-mode aware classes ─────────────────────────────── */
+.card {
+  background: var(--card-bg);
+  box-shadow: var(--card-shadow);
+  border-radius: 16px;
+  border: 1px solid transparent;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.dark .card { border-color: var(--border); }
+
+input, textarea, select {
+  background: var(--bg-input);
+  color: var(--t1);
+  border-color: var(--border);
+  transition: background 0.2s, border-color 0.2s;
+}
+.dark input::placeholder, .dark textarea::placeholder { color: var(--t3); }
