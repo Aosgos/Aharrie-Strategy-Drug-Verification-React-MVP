@@ -46,20 +46,26 @@ const RADAR_DATA = [
 const PERIODS = ["This week","This month","All time"];
 type ChartTab = "bar" | "area" | "pie" | "radar";
 
-const CustomTooltip = ({ active, payload, label, isDark }: {
-  active?: boolean; payload?: { name: string; value: number; color: string }[]; label?: string; isDark: boolean;
-}) => {
-  if (!active || !payload?.length) return null;
-  return (
-    <div className="rounded-xl px-3 py-2 text-[11px]"
-      style={{ background: isDark ? "#1A2D22" : "#fff", border: "1px solid var(--border)", boxShadow: "var(--card-shadow)" }}>
-      <p className="font-semibold mb-1" style={{ color: "var(--t1)" }}>{label}</p>
-      {payload.map(p => (
-        <p key={p.name} style={{ color: p.color }}>{p.name}: {p.value}</p>
-      ))}
-    </div>
-  );
-};
+function makeTooltip(isDark: boolean) {
+  // eslint-disable-next-line react/display-name
+  return function CustomTooltip({ active, payload, label }: {
+    active?: boolean;
+    // Use unknown[] to bypass recharts internal type variance issues at the call site
+    payload?: unknown[];
+    label?: string;
+  }) {
+    if (!active || !payload?.length) return null;
+    return (
+      <div className="rounded-xl px-3 py-2 text-[11px]"
+        style={{ background: isDark ? "#1A2D22" : "#fff", border: "1px solid var(--border)", boxShadow: "var(--card-shadow)" }}>
+        <p className="font-semibold mb-1" style={{ color: "var(--t1)" }}>{label}</p>
+        {(payload as { name?: string; value?: number; color?: string }[]).map((p, i) => (
+          <p key={i} style={{ color: p.color ?? "var(--t1)" }}>{p.name}: {p.value}</p>
+        ))}
+      </div>
+    );
+  };
+}
 
 export default function AnalyticsPage() {
   const { t } = useI18n();
@@ -139,7 +145,7 @@ export default function AnalyticsPage() {
                   <CartesianGrid stroke={gridColor} strokeDasharray="4 4" vertical={false} />
                   <XAxis dataKey="day" tick={{ fontSize:10, fill: axisColor }} axisLine={false} tickLine={false} />
                   <YAxis hide />
-                  <Tooltip content={(props) => <CustomTooltip {...props} isDark={isDark} />} cursor={{ fill: "rgba(74,124,94,0.05)" }} />
+                  <Tooltip content={makeTooltip(isDark)} cursor={{ fill: "rgba(74,124,94,0.05)" }} />
                   <Legend wrapperStyle={{ fontSize:10, color: "var(--t2)" }} />
                   <Bar dataKey="authentic"   name="Authentic"   fill="#4A7C5E" radius={[4,4,0,0]} />
                   <Bar dataKey="suspicious"  name="Suspicious"  fill="#C07A1A" radius={[4,4,0,0]} />
@@ -170,7 +176,7 @@ export default function AnalyticsPage() {
                   <CartesianGrid stroke={gridColor} strokeDasharray="4 4" vertical={false} />
                   <XAxis dataKey="month" tick={{ fontSize:10, fill: axisColor }} axisLine={false} tickLine={false} />
                   <YAxis hide />
-                  <Tooltip content={(props) => <CustomTooltip {...props} isDark={isDark} />} />
+                  <Tooltip content={makeTooltip(isDark)} />
                   <Legend wrapperStyle={{ fontSize:10, color: "var(--t2)" }} />
                   <Area type="monotone" dataKey="authentic" name="Authentic" stroke="#4A7C5E" strokeWidth={2} fill="url(#authGrad)" />
                   <Area type="monotone" dataKey="flagged"   name="Flagged"   stroke="#D4607A" strokeWidth={2} fill="url(#flagGrad)" />
@@ -191,7 +197,7 @@ export default function AnalyticsPage() {
                     labelLine={false}>
                     {PIE_DATA.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                   </Pie>
-                  <Tooltip content={(props) => <CustomTooltip {...props} isDark={isDark} />} />
+                  <Tooltip content={makeTooltip(isDark)} />
                 </PieChart>
               </ResponsiveContainer>
               <div className="flex flex-wrap justify-center gap-3 mt-2">
@@ -217,7 +223,7 @@ export default function AnalyticsPage() {
                   <Radar name="Auth rate" dataKey="A" stroke="#4A7C5E" fill="#4A7C5E" fillOpacity={0.25} />
                   <Radar name="Flags" dataKey="B" stroke="#D4607A" fill="#D4607A" fillOpacity={0.2} />
                   <Legend wrapperStyle={{ fontSize:10, color: "var(--t2)" }} />
-                  <Tooltip content={(props) => <CustomTooltip {...props} isDark={isDark} />} />
+                  <Tooltip content={makeTooltip(isDark)} />
                 </RadarChart>
               </ResponsiveContainer>
             </div>
